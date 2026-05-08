@@ -54,7 +54,7 @@ FastAPI REST API  ←→  Streamlit Web App
 ### 1. Clone the repo
 ```bash
 git clone https://github.com/SahilDogra23/Heart-Disease-Prediction-MLOps.git
-cd Heart-Disease-Prediction
+cd Heart-Disease-Prediction-MLOps
 pip install -r requirements.txt
 ```
 
@@ -74,6 +74,20 @@ curl -X POST "http://127.0.0.1:8000/predict" \
      -H "Content-Type: application/json" \
      -d '{"age":52,"sex":1,"cp":0,"trestbps":125,"chol":212,"fbs":0,"restecg":1,"thalach":168,"exang":0,"oldpeak":1.0,"slope":2,"ca":2,"thal":3}'
 ```
+## 🐳 Docker Deployment
+
+### Build the image
+```bash
+docker build -t heart-disease-api .
+```
+
+### Run the container
+```bash
+docker run -p 8000:8000 heart-disease-api
+```
+
+### Access the API
+Visit `http://127.0.0.1:8000/docs`
 
 ## 📁 Project Structure
 ```Heart_Disease_prediction/
