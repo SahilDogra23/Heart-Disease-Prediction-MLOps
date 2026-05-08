@@ -93,6 +93,13 @@ docker pull sahil2323dogra/heart-disease-api:v1
 docker run -p 8000:8000 sahil2323dogra/heart-disease-api:v1
 ```
 
+### Run complete app with Docker Compose
+```bash
+docker-compose up
+```
+- API runs at `http://127.0.0.1:8000/docs`
+- Frontend runs at `http://127.0.0.1:8501`
+
 ## 📁 Project Structure
 ```Heart_Disease_prediction/
 ├── notebooks/
