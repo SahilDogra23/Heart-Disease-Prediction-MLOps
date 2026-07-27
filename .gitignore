@@ -14,3 +14,4 @@ mlartifacts/
 # Virtual environments
 .venv/
 venv/
+mlflow.db

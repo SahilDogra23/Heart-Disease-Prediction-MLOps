@@ -1,0 +1,21 @@
+# All tunable settings live here. Code reads from this file, never hardcodes.
+data:
+  raw_path: "data/heart.csv"
+  target_column: "target"
+  test_size: 0.2
+  random_state: 42
+
+features:
+  numeric: ["age", "trestbps", "chol", "thalach", "oldpeak"]
+  categorical: ["sex", "cp", "fbs", "restecg", "exang", "slope", "ca", "thal"]
+
+model:
+  type: "random_forest"
+  n_estimators: 300
+  max_depth: 8
+  random_state: 42
+
+evaluation:
+  primary_metric: "recall"
+  min_accuracy: 0.75
+  min_recall: 0.75
