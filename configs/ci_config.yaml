@@ -1,0 +1,22 @@
+# Config used only by the CI pipeline. Trains on the committed sample
+# with a modest threshold, so the pipeline can run without the full DVC data.
+data:
+  raw_path: "tests/sample_heart.csv"
+  target_column: "target"
+  test_size: 0.2
+  random_state: 42
+
+features:
+  numeric: ["age", "trestbps", "chol", "thalach", "oldpeak"]
+  categorical: ["sex", "cp", "fbs", "restecg", "exang", "slope", "ca", "thal"]
+
+model:
+  type: "logistic_regression"
+  n_estimators: 100
+  max_depth: 10
+  random_state: 42
+
+evaluation:
+  primary_metric: "recall"
+  min_accuracy: 0.65
+  min_recall: 0.60
