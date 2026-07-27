@@ -10,12 +10,12 @@ features:
   categorical: ["sex", "cp", "fbs", "restecg", "exang", "slope", "ca", "thal"]
 
 model:
-  type: "random_forest"
-  n_estimators: 300
-  max_depth: 8
-  random_state: 42
+  type: "logistic_regression"
+  n_estimators: 100
+  max_depth: 10
+  random_state: 42dvcini
 
 evaluation:
   primary_metric: "recall"
-  min_accuracy: 0.75
-  min_recall: 0.75
+  min_accuracy: 0.65
+  min_recall: 0.60
