@@ -1,122 +1,131 @@
-# 🫀 Heart Disease Prediction — Production ML System
+# Heart Disease Prediction: MLOps Pipeline
 
-An end-to-end Machine Learning system that predicts the presence of heart disease using clinical features. Built following the framework from **Aurélien Géron's "Hands-On Machine Learning" Chapter 2** and deployed to production.
+An end-to-end machine learning project that predicts the presence of heart
+disease from clinical measurements, built with a full MLOps workflow:
+modular code, data versioning, experiment tracking, automated testing,
+CI/CD, and drift monitoring.
 
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-orange)
-![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
-![Streamlit](https://img.shields.io/badge/Streamlit-Frontend-FF4B4B)
-![Render](https://img.shields.io/badge/Render-Deployed-46E3B7)
+## Project overview
 
-## 🌐 Live Demo
-| Component | URL |
-|-----------|-----|
-| 🖥️ Web App | [heart-disease-prediction.streamlit.app](https://heart-disease-prediction-bekd7nprm3xyizjtd2twp2.streamlit.app) |
-| ⚙️ REST API | [heart-disease-api-jh78.onrender.com](https://heart-disease-api-jh78.onrender.com) |
-| 📖 API Docs | [/docs](https://heart-disease-api-jh78.onrender.com/docs) |
+The model predicts whether a patient has heart disease (binary classification)
+from 13 clinical features such as age, resting blood pressure, cholesterol, and
+maximum heart rate. **Recall is the primary metric**, because in a medical screen
+a false negative (missing a sick patient) is costlier than a false alarm.
 
-## 🏗️ System Architecture
-``` Raw Clinical Data (CSV)
-↓
-Data Cleaning & EDA
-(Removed 723 duplicates)
-↓
-Model Training & Tuning
-(GridSearchCV → 82% accuracy, 85% recall)
-↓
-Saved Model (.pkl)
-↓
-FastAPI REST API  ←→  Streamlit Web App
-(Render)               (Streamlit Cloud) ```
-
-## 📊 Model Performance
+After comparing five-plus experiments across logistic regression, random forest,
+and SVM, **logistic regression was selected** as the best model:
 
 | Metric | Score |
-|--------|-------|
-| Accuracy | 82% |
-| Recall | 85% |
-| Models Compared | Logistic Regression, Random Forest, SVM |
-| Tuning Method | GridSearchCV (optimized for Recall) |
+|---|---|
+| Recall | 0.85 |
+| Accuracy | 0.84 |
+| Precision | 0.85 |
+| F1 | 0.85 |
 
-## ⚙️ Tech Stack
+Notably, the simplest model outperformed the more complex ones, which is common
+on small tabular datasets.
 
-| Layer | Technology |
-|-------|-----------|
-| ML | Scikit-learn, Pandas, NumPy |
-| API | FastAPI, Uvicorn, Pydantic |
-| Frontend | Streamlit |
-| API Hosting | Render |
-| Frontend Hosting | Streamlit Cloud |
-| Version Control | Git + GitHub |
+## Tech stack
 
-## 🚀 Run Locally
+- **Data versioning:** DVC
+- **Experiment tracking:** MLflow
+- **Testing:** pytest
+- **CI/CD:** GitHub Actions
+- **Drift monitoring:** Evidently
+- **Modeling:** scikit-learn, pandas
+- **Serving:** FastAPI + Streamlit + Docker
 
-### 1. Clone the repo
+## Project structure
+
+```
+.
+├── src/
+│   ├── data_preprocessing.py   # loading, cleaning, feature prep
+│   ├── train.py                # config-driven training + MLflow logging + perf gate
+│   ├── evaluate.py             # evaluation metrics
+│   └── monitor_drift.py        # Evidently drift detection
+├── configs/
+│   ├── config.yaml             # main training config
+│   └── ci_config.yaml          # lightweight config for CI
+├── tests/
+│   ├── test_preprocessing.py   # unit tests
+│   ├── test_data.py            # data validation tests
+│   ├── test_model.py           # model validation tests
+│   └── sample_heart.csv        # small sample for CI-safe tests
+├── .github/workflows/ci.yml    # CI/CD pipeline
+├── compare_experiments.py      # queries MLflow to find the best run
+├── MONITORING.md               # drift analysis writeup
+├── requirements.txt
+└── data/heart.csv.dvc          # DVC pointer (data itself is not in Git)
+```
+
+## Setup
+
 ```bash
 git clone https://github.com/SahilDogra23/Heart-Disease-Prediction-MLOps.git
 cd Heart-Disease-Prediction-MLOps
 pip install -r requirements.txt
 ```
 
-### 2. Start the API
+### Getting the data
+
+The dataset is versioned with DVC and is not committed to Git. The DVC remote
+for this project is local, so if `dvc pull` is unavailable on your machine,
+download `heart.csv` from the
+[Kaggle Heart Disease dataset](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset)
+and place it at `data/heart.csv`.
+
 ```bash
-uvicorn app:app --reload
+dvc pull   # if the remote is accessible
 ```
 
-### 3. Start the frontend (new terminal)
+## Running the project
+
+**Train the model** (reads all settings from the config):
 ```bash
-streamlit run streamlit_app.py
+python -m src.train --config configs/config.yaml
 ```
 
-### 4. Or call the API directly
+**View experiments** in the MLflow dashboard:
 ```bash
-curl -X POST "http://127.0.0.1:8000/predict" \
-     -H "Content-Type: application/json" \
-     -d '{"age":52,"sex":1,"cp":0,"trestbps":125,"chol":212,"fbs":0,"restecg":1,"thalach":168,"exang":0,"oldpeak":1.0,"slope":2,"ca":2,"thal":3}'
-```
-## 🐳 Docker Deployment
-
-### Build the image
-```bash
-docker build -t heart-disease-api .
-```
-### Run the container
-```bash
-docker run -p 8000:8000 heart-disease-api
-```
-### Access the API
-Visit `http://127.0.0.1:8000/docs`
-
-### Pull from Docker Hub
-```bash
-docker pull sahil2323dogra/heart-disease-api:v1
-docker run -p 8000:8000 sahil2323dogra/heart-disease-api:v1
+mlflow ui
+# then open http://127.0.0.1:5000
 ```
 
-### Run complete app with Docker Compose
+**Find the best run** programmatically:
 ```bash
-docker-compose up
+python compare_experiments.py
 ```
-- API runs at `http://127.0.0.1:8000/docs`
-- Frontend runs at `http://127.0.0.1:8501`
 
-## 📁 Project Structure
-```Heart_Disease_prediction/
-├── notebooks/
-│   └── heart_disease.ipynb    ← EDA, training, evaluation
-├── models/
-│   ├── heart_disease_model.pkl
-│   └── heart_disease_features.pkl
-├── app.py                     ← FastAPI backend
-├── streamlit_app.py           ← Streamlit frontend
-├── Procfile                   ← Render deployment config
-├── requirements.txt
-└── README.md```
+**Run the tests:**
+```bash
+python -m pytest tests/ -v
+```
 
-## 📚 Reference
-- Géron, A. (2019). *Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow* — Chapter 2
-- Dataset: [Kaggle Heart Disease Dataset](https://www.kaggle.com/datasets/johnsmith88/heart-disease-dataset)
+**Check for data drift** (saves an HTML report to `reports/`):
+```bash
+python -m src.monitor_drift
+```
 
-## 👤 Author
-**Sahil Dogra**
-[![GitHub](https://img.shields.io/badge/GitHub-SahilDogra23-black)](https://github.com/SahilDogra23)
+## How it is built
+
+**Data versioning (DVC).** The dataset is tracked with DVC, so Git holds only a
+small pointer file while the data lives in a remote. This keeps large files out
+of Git while preserving reproducibility.
+
+**Experiment tracking (MLflow).** Every training run logs its parameters,
+metrics, and the trained model. `compare_experiments.py` queries all runs to
+identify the best by recall.
+
+**Testing (pytest).** Thirteen tests across three levels: unit tests for
+preprocessing functions, data validation tests for the dataset, and model
+validation tests that train and sanity-check a model.
+
+**CI/CD (GitHub Actions).** On every push, a test job runs the full suite, and a
+train job (which runs only if tests pass) trains the model and fails the build if
+it misses performance thresholds.
+
+**Drift monitoring (Evidently).** `src/monitor_drift.py` compares the training
+distribution against simulated production data, reports drifted features, and
+exits non-zero if drift exceeds a threshold. See `MONITORING.md` for the analysis.
+
